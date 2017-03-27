@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015 Bilibili
  * Copyright (c) 2015 Zhang Rui <bbcallen@gmail.com>
  *
  * This file is part of ijkPlayer.
@@ -197,6 +198,11 @@ static int ijklivehook_read_header(AVFormatContext *avf, AVDictionary **options)
         av_dict_copy(&c->open_opts, *options, 0);
 
     c->io_control.retry_counter = 0;
+    ret = ijkurlhook_call_inject(avf);
+    if (ret) {
+        ret = AVERROR_EXIT;
+        goto fail;
+    }
     ret = open_inner(avf);
     while (ret < 0) {
         // no EOF in live mode

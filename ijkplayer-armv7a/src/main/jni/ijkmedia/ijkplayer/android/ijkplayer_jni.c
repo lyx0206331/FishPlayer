@@ -1,6 +1,7 @@
 /*
  * ijkplayer_jni.c
  *
+ * Copyright (c) 2013 Bilibili
  * Copyright (c) 2013 Zhang Rui <bbcallen@gmail.com>
  *
  * This file is part of ijkPlayer.
@@ -963,6 +964,10 @@ static void message_loop_n(JNIEnv *env, IjkMediaPlayer *mp)
         case FFP_MSG_SEEK_COMPLETE:
             MPTRACE("FFP_MSG_SEEK_COMPLETE:\n");
             post_event(env, weak_thiz, MEDIA_SEEK_COMPLETE, 0, 0);
+            break;
+        case FFP_MSG_ACCURATE_SEEK_COMPLETE:
+            MPTRACE("FFP_MSG_ACCURATE_SEEK_COMPLETE:\n");
+            post_event(env, weak_thiz, MEDIA_INFO, MEDIA_INFO_MEDIA_ACCURATE_SEEK_COMPLETE, msg.arg1);
             break;
         case FFP_MSG_PLAYBACK_STATE_CHANGED:
             break;

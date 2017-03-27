@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2006 Bilibili
  * Copyright (C) 2006 The Android Open Source Project
  * Copyright (C) 2013 Zhang Rui <bbcallen@gmail.com>
  *
@@ -424,7 +425,12 @@ public class AndroidMediaPlayer extends AbstractMediaPlayer {
             if (self == null)
                 return;
 
-            IjkTimedText ijkText = new IjkTimedText(text.getBounds(), text.getText());
+            IjkTimedText ijkText = null;
+
+            if (text != null) {
+                ijkText = new IjkTimedText(text.getBounds(), text.getText());
+            }
+
             notifyOnTimedText(ijkText);
         }
     }

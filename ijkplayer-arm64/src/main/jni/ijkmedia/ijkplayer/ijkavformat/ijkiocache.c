@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2016 Bilibili
  * Copyright (c) 2016 Raymond Zheng <raymondzheng1412@gmail.com>
  *
  * This file is part of ijkPlayer.
@@ -724,7 +725,7 @@ static int ijkio_cache_open(IjkURLContext *h, const char *url, int flags, IjkAVD
     if (c->inner && !ret) {
         c->inner->ijkio_app_ctx = c->ijkio_app_ctx;
         ret = c->inner->prot->url_open2(c->inner, url, flags, options);
-        if (ret < 0)
+        if (ret != 0)
             goto url_fail;
         else
             c->logical_size = ijkio_cache_ffurl_size(h);
@@ -754,8 +755,11 @@ static int ijkio_cache_open(IjkURLContext *h, const char *url, int flags, IjkAVD
         goto cond_wakeup_exit_fail;
     }
 
+    c->task_is_running = 1;
     ret = ijk_threadpool_add(c->threadpool_ctx, ijkio_cache_task, h, NULL, 0);
     if (ret) {
+        c->task_is_running = 0;
+        pthread_cond_signal(&c->cond_wakeup_exit);
         goto thread_fail;
     }
 
@@ -945,14 +949,19 @@ static int ijkio_cache_resume(IjkURLContext *h) {
 
     if (c->inner->prot->url_resume) {
         ret = c->inner->prot->url_resume(c->inner);
-        if (ret < 0) {
+        if (ret != 0) {
             return ret;
         }
     }
 
     c->abort_request = 0;
 
+    c->task_is_running = 1;
     ret = ijk_threadpool_add(c->threadpool_ctx, ijkio_cache_task, h, NULL, 0);
+    if (ret) {
+        c->task_is_running = 0;
+        pthread_cond_signal(&c->cond_wakeup_exit);
+    }
 
     return ret;
 }
